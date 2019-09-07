@@ -5,13 +5,13 @@
 ### **1. Criando nova tabela para o banco de dados**
 
 Agora vamos criar uma nova tabela no banco de dados para registros de agendamentos, logo:
-```
+```javascript
 yarn sequelize migration:create --name=create-appointments
 ```
 ### **2. Configurando a nova migration**
 
 Em um agendamento temos em comum um **id** que é a chave primária e única desse agendamento. A **data** do agendamento no fomato **Sequelize.DATE**. O **id do usuário e do prestador de serviços**. E por fim as datas de **criação**, **cancelamento** e **atualização** do agendamento.
-```
+```javascript
 'use strict';
 
 module.exports = {
@@ -62,7 +62,7 @@ module.exports = {
 };
 ```
 E por meio do desses dois campos temos um relacionamento com **usuário** e **prestador de serviço**.
-```
+```javascript
   user_id: {
     type: Sequelize.INTEGER,
     references: { model: 'users', key: 'id' },
@@ -81,13 +81,13 @@ E por meio do desses dois campos temos um relacionamento com **usuário** e **pr
 A relação é feita por conta de ```references: { model: 'users', key: 'id' }```.
 
 Agora podemos migrar a tabela para o banco de dados:
-```
+```javascript
 yarn sequelize db:migrate
 ```
 
 ### **3. Configurando o model appointments.js**
 
-```
+```javascript
 import Sequelize, { Model } from 'sequelize';
 import { isBefore, subHours } from 'date-fns';
 
@@ -121,7 +121,7 @@ class Appointment extends Model {
 export default Appointment;
 ```
 Por meio desse método é gerado um contrato de relacionamento entre provedor de serviços e usuário cliente.
-```
+```javascript
 static init(sequelize){
     super.init(
       {
@@ -135,7 +135,7 @@ static init(sequelize){
         },
 ```
 Aqui temos o relacionamento de prestador de serviços e usuário cliente:
-```
+```javascript
 static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
     this.belongsTo(models.User, { foreignKey: 'provider_id', as: 'provider' });
@@ -143,11 +143,11 @@ static associate(models) {
 ```
 Agora é necessário configruar **index.js** e importar o modelo **Appointments.js**:
 
-```
+```javascript
 import Appointments from '../app/models/Appointment';
 ```
 Dentro de **Appointment.js** adicione-o dentro da **constante models**: 
-```
+```javascript
 const models = [User, File, Appointment];
 ```
 Agora estamos com três models que podem ser mapeados por nossa aplicação.
