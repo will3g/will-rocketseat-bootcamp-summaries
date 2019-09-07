@@ -23,7 +23,7 @@ Como boas práticas, fora da pasta ```src``` foi criado a pasta ```tmp``` que co
 
   Dentro da pasta **config** crie um arquivo chamado **multer.js**. Esse arquivo será responsável por toda a configuração de uplaods na aplicação. Conteúdo do arquivo **multer.js**:
 
-```
+```javascript
 import multer from 'multer';
 import crypto from 'crypto';
 import { extname, resolve } from 'path';
@@ -44,7 +44,7 @@ export default {
 ```
 
 Para a utilização da lib **multer**, é necessário importar o mesmo no arquivo da seguinte forma ```import multer from 'multer';```. Logo em seguida é importado da lib **path** ```import {extname, resolve} from 'path';```. 
-```
+```javascript
 import multer from 'multer';
 import crypto from 'crypto';
 import { extname, resolve } from 'path';
@@ -52,7 +52,7 @@ import { extname, resolve } from 'path';
 O [**path**](https://nodejs.org/api/path.html) é uma lib padrão do node, assim como o **Crypto**. O **extname** retorna a extensão do arquivo, já o **resolve** serve para percorrer caminhos dentro da aplicação.
 
 
-```
+```javascript
 storage: multer.diskStorage({
 // A linha acima serve para salvar informações utilizando o multer
 
@@ -72,14 +72,14 @@ storage: multer.diskStorage({
       });
 ```
 Por meio do próximo bloco, passamos **null** como **primeiro parâmetro**, porque não queremos que dê erro. No **segundo parâmetro** estamos convertendo 16 bytes de conteúdo aleatório do tipo string em hexadecimal e em seguida estamos concatenando-o com a extensão do arquivo original.
-```
+```javascript
 return cb(null, res.toString('hex') + extname(file.originalname));
 ```
 
 ### **3. Criando o controle de arquivos**
 
 É necessário a criação de um controller para os arquivos de upload, por conta disso foi criado o FileController.js, apresentando a seguinte configuração:
-```
+```javascript
 import File from '../models/File';
 
 class FileController {
@@ -99,11 +99,11 @@ class FileController {
 export default new FileController();
 ```
 No código abaixo, por meio de desestruturação, estamos obtendo os seguintes dados de acordo com **originalname** e **filename**.
-```
+```javascript
 const { originalname: name, filename: path } = req.file;
 ```
 Em seguida selecionamos os atríbutos por short syntax e criamos um arquivo. Por fim enviamos a constante **File**.
-```
+```javascript
  const file = await File.create({
       name,
       path,
@@ -113,16 +113,16 @@ Em seguida selecionamos os atríbutos por short syntax e criamos um arquivo. Por
 ```
 
   ### **4. Importando o multer em routes.js**
-```
+```javascript
 import multer from 'multer';
 import multerConfig from './config/multer';
 ```
 Em seguida craimos uma **constante upload** para ser atribuida pelo método da lib multer, onde receberá a configuração de **multer.js**. Ficando da seguinte maneira:
-```
+```javascript
 const upload = multer(multerConfig);
 ```
 Em seguida a rota para uploads de arquivos foi criada da seguinte maneira:
-```
+```javascript
 rouste.post('/files', upload.single('file'), FileController.store);
 ```
 O ```upload.single('file')``` é responsável para fazer upload de somente um único arquivo por vez. Uma **observação**, se precisar fazer uploads de vários arquivos, um exemplo seria ```upload.multiple('files')```.
@@ -130,7 +130,7 @@ O ```upload.single('file')``` é responsável para fazer upload de somente um ú
   ### **5. Configurando o Insominia**
 
   O insominia é uma ferramenta que nos permite testar a aplicação. Primeiramente é necessário configurar-lo, então vá em **No Environment** (no canto superior esquedo) e em seguida clique em **Manage Environment**. Agora configure da seguinte forma:
-```
+```javascript
 {
   "base_url": "localhost:3333",
   "token": "token-gerado-na-sessao-do-usuario"
@@ -157,11 +157,11 @@ O **token** gerado na sessão do usuário é necessário ir na aba em **auth** e
 > ```yarn sequelize db:migrate:undo:all```
 #
  Primeiramente precisamos criar uma nova tabela no banco de dados para salvamento desses uploads, então antes de tudo é necessario criar uma migration: 
- ```
+ ```javascript
  yarn sequelize migration:create --name=create-files
  ```
  Na nova migration foi necessario criar uma nova coluna para armazenar os arquivos, logo:
-```
+```javascript
 'use strict';
 
 module.exports = {
@@ -202,14 +202,14 @@ module.exports = {
 Por meio dessa migration temos um **id** como primary key, um **nome**, que por sinal será o **nome original** do arquivo, em seguida temos o **path** que será o nome gerado pelo **crypto.randomBytes** que por sinal será um **nome único**, a **data de criação** e de **updates**.
 
 Agora com a migration finalizada, podemos criar nossa tabela no banco de dados com o seguinte comando:
- ```
+ ```javascript
  yarn sequelize db:migrate
  ```
 
   ### **7. Criando o model de arquivos**
 
   O **model de arquivos** tem a função de manipulação dos arquivos. Podemos ver que por meio desse **Model de arquivos** temos a importação do **Sequelize** e de **Model** ```import Sequelize, { Model } from 'sequelize';```.
-```
+```javascript
 import Sequelize, { Model } from 'sequelize';
 
 class File extends Model {
@@ -237,7 +237,7 @@ class File extends Model {
 export default File;
 ```
 A classe **File** herda atríbutos da classe **Model** de **sequelize**, onde possuí um método estático ```static init(sequelize) {...}``` que faz uma chamada a classe mãe **Model** com ```super.init({ ... })```.
-```
+```javascript
 .
 .
 .
@@ -261,7 +261,7 @@ class File extends Model {
       .
 ```
 E em seguida é passado o que é para o modelo de arquivos o que deve ser retornado como resposta. 
-```
+```javascript
 {
         name: Sequelize.STRING,
         path: Sequelize.STRING,
@@ -274,7 +274,7 @@ E em seguida é passado o que é para o modelo de arquivos o que deve ser retorn
 }
 ```
 Em  ```name: Sequelize.STRING``` é retornado o nome original do arquivo. No ```path: Sequelize.STRING``` é passado o nome aleatório de 16 bytes gerado por **crypto.randomBytes**, que por sinal esse **path** é adicionado em:
-```
+```javascript
 url: {
           type: Sequelize.VIRTUAL,
           get() {
@@ -285,11 +285,11 @@ url: {
 Que tem como função retornar uma **url** do arquivo, onde facilitará a manipulação de arquivos no frontend da aplicação.
 ###
 Agora em **index.js** é necessário importar o **modelo de arquivos**, ficando da seguinte maneira:
-```
+```javascript
 import File from '../app/models/file';
 ```
 E consequentemente alterar a constante models, adicionando no vetor, o modelo de arquivos:
-```
+```javascript
 const models = [User, File];
 ```
 
@@ -298,12 +298,12 @@ const models = [User, File];
   ### **8. Migration para relacionamento de usuários e upload de arquivos**
 
   Primeiramente é necessário criar uma nova migration, por tanto:
-  ```
+  ```javascript
   yarn sequelize migration:create --name=add-avatar-field-to-users
   ```
 Por meio de  ```return queryInterface.addColumn('users', 'avatar_id', { ... }``` é adicionado uma nova coluna na tabela **users** no banco de dados com o nome **avatar_id**.
 A configuração desta migration ficará da seguinte maneira:
-```
+```javascript
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.addColumn('users', 'avatar_id', {
@@ -323,7 +323,7 @@ module.exports = {
 
 ```
 Logo é passado alguns atributos para essa coluna:
-```
+```javascript
       type: Sequelize.INTEGER,
       references: { model: 'files', key: 'id' },
       onUpdate: 'CASCADE',
@@ -333,13 +333,13 @@ Logo é passado alguns atributos para essa coluna:
 Como podemos ver ```type: Sequelize.INTEGER``` é do tipo inteiro, onde tem referência com o **modelo de arquivos** onde será relacionado por meio da chave **id** ```references: { model: 'files', key: 'id' }```. Em seguida temos ```onUpdate: 'CASCADE'```, caso o usuário atualize sua foto de perfil, atualizara a tabela inteira do banco de dados. Em ```onDelete: 'SET NULL'```, caso o usuário delete sua foto de perfil, no banco de dados esse campo ficará como **null**, entretanto, por **default** quando a conta é criada esse campo já vem com o valor **null**.
 ###
 Agora é só fazer a migração para o banco de dados:
-```
+```javascript
 yarn sequelize db:migrate
 ```
   ### **9. Relacionamento do modelos ```User``` e ```File```**
 
 No model **User** é necessário adicionar:
-```
+```javascript
  static associate(models) {
     this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
   }
@@ -350,7 +350,7 @@ O método estático ```static associate(models) { ... }``` será responsável po
 
 O **index.js** é a "ponte" entre a aplicação e o banco de dados, sua configuração atual:
 
-```
+```javascript
 import Sequelize from 'sequelize';
 
 import User from '../app/models/User';
@@ -377,7 +377,7 @@ class Database {
 export default new Database();
 ```
 O método **init( )** é responsável por executar a configuração de **databaseConfig** e de percorrer todos os models da aplicação.
-```
+```javascript
 init() {
     this.connection = new Sequelize(databaseConfig);
 
@@ -387,14 +387,14 @@ init() {
 }
 ```
 O código abaixo vai mapear todos os models, entrentanto ele também é responsável por chamar o **model.associate** somente se ele existir na conexão dos models. Portanto só será chamado por meio do model de **User** (ou **user.js**).
-```
+```javascript
 .map(model => model.associate && model.associate(this.connection.models));
 ```
 
 ### **11. Alterando app.js**
 
 E agora para **finalizar de vez** a **relação de usuário e upload de arquivos**, no arquivo **app.js** precisamos adicionar ```this.server.use('/files', express.static(path.resolve(__dirname, '..', 'tmp', 'uploads')));``` no método **middleware**. Ficará da seguinte maneira:
-```
+```javascript
 // Não se esqueça de importar o path
 
  middlewares() {
@@ -410,7 +410,7 @@ O ```this.server.use('/files', express.static(path.resolve(__dirname, '..', 'tmp
 ### **12. Um pouco mais sobre o app.js**
 
 Em **app.js** deve-se adicionar no **middlewares( )** a seguinte configuração:
-```
+```javascript
 middlewares( ) {
   this.server.use(express.json());
   this.server.use('/files', express.static(
@@ -419,7 +419,7 @@ middlewares( ) {
 }
 ```
 Por meio da rota **/files** e ```express.static``` é passado o nome do diretório que contém os ativos estáticos para a função de middleware, para iniciar entrega direta dos arquivos.
-```
+```javascript
 this.server.use('/files', express.static(
     path.resolve(__dirname, '..', 'tmp', 'uploads'))
   );
@@ -430,7 +430,7 @@ E por meio de ```path.resolve(__dirname, '..', 'tmp', 'uploads'))``` fazemos a n
 
 Com base na requisição de uploads de arquivos pelo insominia que por sinal já está criada e upload de arquivo já feito, precisamos passar pelo corpo da requisição (em JSON) da seguinte forma:
 
-```
+```javascript
 {
   "name": "fulano",
   "email": "fulanoDaSilva@email.com",
