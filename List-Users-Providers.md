@@ -10,7 +10,7 @@ O **ProviderController.js** será responsável por usuários prestadores de serv
 
 ### **2. Configuração de ProviderController.js**
 A classe contém um **método index** que tem como função filtrar todos os prestadores de serviços, conforme pode ver no código abaixo:
-```
+```javascript
 import User from '../models/User';
 import File from '../models/File';
 
@@ -35,7 +35,7 @@ class ProviderController {
 export default new ProviderController();
 ```
 Dentro desse método **index** temos uma constante providers ```const providers = await User.findAll``` que tem como função buscar todos os usuário cadastrados no GoBarber.
-```
+```javascript
 async index (req, res) {
     const providers = await User.findAll({
       where: { provider: true },
@@ -50,7 +50,7 @@ async index (req, res) {
     });
 ```
 E dentro dessa constante temos um filtro para buscar somente prestadores de serviços. O ```where: { provider: true }``` é responsável por buscar todos os usuários em que **provider é verdadeiro**. Logo em seguida temos um outro filtro na resposta em JSON, pois só queremos os atríbutos **id, name, email, avatar_id** ```attributes: ['id', 'name', 'email', 'avatar_id']```.
-```
+```javascript
  where: { provider: true },
       attributes: ['id', 'name', 'email', 'avatar_id'],
       include: [
@@ -61,7 +61,7 @@ E dentro dessa constante temos um filtro para buscar somente prestadores de serv
         },
 ```
 Logo após temos um **include** que serve para incluir "objetos" relacionados a este usuário. Como já temos um relacionamento com o **modelo de arquivo** podemos e precisamos chama-lo para exibir a foto de perfil do usuário prestador de serviço para os demais usuários/clientes.
-```
+```javascript
 include: [
         {
           model: File,
@@ -75,7 +75,7 @@ Logo selecionamos o modelo ```model: File```, renomeamos como **avatar** por mei
 
 Não se esqueça que por meio de ```get() { return `localhost:3333/files/${this.path} }``` será o meio de manipulação de arquivos no front da aplicação.
 
-```
+```javascript
   name: Sequelize.STRING,
   path: Sequelize.STRING,
   url: {
